@@ -6,7 +6,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copia a solução e todos os projetos necessários
-COPY FCG-Users.sln ./
+COPY FCG-VideoGames.sln ./
 COPY src/FCG.API/ ./FCG.API/
 COPY src/FCG.Application/ ./FCG.Application/
 COPY src/FCG.Domain/ ./FCG.Domain/
