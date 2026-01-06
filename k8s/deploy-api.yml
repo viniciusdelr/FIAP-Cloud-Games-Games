@@ -27,7 +27,7 @@ kind: Service
 metadata:
   name: servico-api-games
 spec:
-  type: LoadBalancer 
+  type: ClusterIP 
   selector:
     app: api-games
   ports:
