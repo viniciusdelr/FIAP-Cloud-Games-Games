@@ -3,11 +3,10 @@ name: Build, Push and Deploy to Azure
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  build-push-deploy: 
+  build-and-deploy:
     name: Build Docker and Deploy to Azure
     runs-on: ubuntu-latest
 
@@ -39,14 +38,9 @@ jobs:
       - name: Set AKS Context
         uses: azure/aks-set-context@v3
         with:
-          resource-group: fiap-rg
-          cluster-name: aks-fiap-cluster 
+          resource-group: fiap-rg         
+          cluster-name: aks-fiap-cluster  
 
-      - name: Deploy to Kubernetes
-        uses: azure/k8s-deploy@v4
-        with:
-          action: deploy
-          manifests: |
-            k8s/deploy-api.yml
-          images: |
-            viniciusdelr/videogames-service:latest
+      - name: Refresh Deployment in AKS
+        run: |
+          kubectl rollout restart deployment/api-games-deployment
