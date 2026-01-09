@@ -22,12 +22,12 @@ namespace FCG.Controllers
         [Authorize]
         public async Task<ActionResult> GetUserLibrary(int id)
         {
-            var videoGame = await _context.Library.FindAsync(id);
+            var UserLibrary = await _context.Library.Where(l => l.IdUser == id).ToListAsync();
 
-            if (videoGame is null)
-                return NotFound(new { mensagem = "Jogo não encontrado." });
+            if (UserLibrary is null)
+                return NotFound(new { mensagem = "Carteira de Usuario não encontrado." });
 
-            return Ok(videoGame);
+            return Ok(UserLibrary);
         }
 
 
