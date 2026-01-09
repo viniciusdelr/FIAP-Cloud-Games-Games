@@ -1,19 +1,23 @@
-﻿using FCG.Infrastructure.Data;
-using FCG.Domain.Entities;
-using Microsoft.AspNetCore.Mvc;
-using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore;
+﻿using FCG.API.Events;
 using FCG.Application.DTOs;
+using FCG.Domain.Entities;
+using FCG.Infrastructure.Data;
+using MassTransit;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace FCG.Controllers
 {
     public class VideoGamesController : Controller
     {
         private readonly DataContext _context;
-        public VideoGamesController(DataContext context)
+        private readonly ISendEndpointProvider _sendEndpointProvider;
+        public VideoGamesController(DataContext context, ISendEndpointProvider sendEndpointProvider)
         {
             _context = context;
+            _sendEndpointProvider = sendEndpointProvider;
         }
 
         [HttpPost("PostVideoGames")]
@@ -107,6 +111,47 @@ namespace FCG.Controllers
 
             return Ok(new { mensagem = "Jogo atualizado com sucesso.", UpdatedVideoGame });
         }
+
+
+        [HttpPost("buy")]
+        public async Task<ActionResult> BuyGame([FromBody] LibraryDto dtoLibrary)
+        {
+            // 1. Criamos um ID único para rastrear essa transação
+            var correlationId = Guid.NewGuid();
+
+            // 2. Criamos o registro no banco vinculando ao ID de transação
+            var library = new Library
+            {
+                Username = dtoLibrary.Username,
+                IdUser = dtoLibrary.IdUser,
+                IdGame = dtoLibrary.IdGame,
+                PurchasedDate = DateTime.UtcNow,
+                ValuePaid = dtoLibrary.ValuePaid,
+                CorrelationId = correlationId, // Agora o campo existe na entidade!
+                Status = "Pendente"            // Definimos como inicial
+            };
+
+            _context.Library.Add(library);
+            await _context.SaveChangesAsync();
+
+            var endpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri("queue:buygame-queue"));
+
+            // 3. DISPARAMOS PARA O SERVICE BUS
+            await endpoint.Send(new GamePurchased
+            {
+                CorrelationId = correlationId,
+                UserId = dtoLibrary.IdUser,
+                Price = dtoLibrary.ValuePaid
+            });
+
+            return Accepted(new
+            {
+                Message = "Compra em processamento. Aguardando validação de pagamento.",
+                TransactionId = correlationId
+            });
+        }
+
+        public record BuyGameRequest(int UserId, int GameId, decimal Price);
 
         //[HttpDelete("DeleteVideoGames/{id}")]
         //[Authorize(Roles = "Admin")]

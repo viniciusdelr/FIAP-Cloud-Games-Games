@@ -11,5 +11,6 @@ namespace FCG.Infrastructure.Data
         }
 
         public DbSet<VideoGames> VideoGames { get; set; }
+        public DbSet<Library> Library { get; set; }
     }
 }

@@ -1,14 +1,16 @@
+using FCG.Games.API.Consumers;
 using FCG.Infrastructure.Data;
+//using static System.Runtime.InteropServices.JavaScript.JSType;
+using FCG.Middlewares;
 using JWT_Example;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-//using static System.Runtime.InteropServices.JavaScript.JSType;
-using FCG.Middlewares;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using System;
-using Microsoft.OpenApi.Models;
+using System.Text;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -122,6 +124,22 @@ builder.Services.AddDbContext<DataContext>(options =>
 //);
 
 builder.WebHost.UseUrls("http://0.0.0.0:80");
+
+// No arquivo Program.cs do projeto Games
+builder.Services.AddMassTransit(x =>
+{
+    // 1. Registra o consumidor que criamos para ouvir a resposta do Payments
+    x.AddConsumer<PaymentResultConsumer>();
+
+    x.UsingAzureServiceBus((context, cfg) =>
+    {
+        // 2. Usa a Connection String definida no appsettings.json
+        cfg.Host(builder.Configuration.GetConnectionString("AzureServiceBus"));
+
+        // 3. Configura automaticamente as filas (endpoints) para o PaymentResultConsumer
+        cfg.ConfigureEndpoints(context);
+    });
+});
 
 var app = builder.Build();
 
