@@ -134,7 +134,7 @@ builder.Services.AddMassTransit(x =>
     x.UsingAzureServiceBus((context, cfg) =>
     {
         // 2. Usa a Connection String definida no appsettings.json
-        cfg.Host(builder.Configuration.GetConnectionString("AzureServiceBus"));
+        cfg.Host(builder.Configuration.GetConnectionString("ServiceBusConnection"));
 
         // 3. Configura automaticamente as filas (endpoints) para o PaymentResultConsumer
         cfg.ConfigureEndpoints(context);
