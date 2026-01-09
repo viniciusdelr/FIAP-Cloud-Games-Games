@@ -4,7 +4,6 @@ namespace FCG.Application.DTOs
 {
     public class LibraryDto
     {
-        public int Id { get; set; }
         public required string Username { get; set; } = string.Empty;
         public int IdUser { get; set; }
 

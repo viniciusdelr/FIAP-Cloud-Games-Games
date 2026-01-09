@@ -153,21 +153,5 @@ namespace FCG.Controllers
 
         public record BuyGameRequest(int UserId, int GameId, decimal Price);
 
-        //[HttpDelete("DeleteVideoGames/{id}")]
-        //[Authorize(Roles = "Admin")]
-        //public async Task<ActionResult> DeleteVideoGame(int id)
-        //{
-
-        //    var videoGame = await _context.VideoGames.FindAsync(id);
-
-        //    if (videoGame is null)
-        //        return NotFound(new { mensagem = "Jogo não encontrado." });
-
-        //    _context.VideoGames.Remove(videoGame);
-
-        //    await _context.SaveChangesAsync();
-
-        //    return Ok(new { mensagem = "Jogo deletado com sucesso.", VideoGames = await _context.VideoGames.ToListAsync() });
-        //}
     }
 }
